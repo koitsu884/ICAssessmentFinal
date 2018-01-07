@@ -1,0 +1,23 @@
+﻿@model IEnumerable<ICAssessmentFinal.ViewModels.Store.StoreProductListViewModel>
+
+<table class="table">
+    <tr>
+        <th>@Html.DisplayNameFor(model => model.Id)</th>
+        <th>@Html.DisplayNameFor(model => model.ProductName)</th>
+        <th>@Html.DisplayNameFor(model => model.IsAvailable)</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@Html.DisplayFor(modelItem => item.Id)</td>
+            <td>@Html.DisplayFor(modelItem => item.ProductName)</td>
+            <td>@Html.CheckBoxFor(modelItem => item.IsAvailable, new { @class = "IsAvailable"})</td>     
+            <td class="updated" style="display:none"></td>
+        </tr>
+
+    }
+    
+</table>
+
+

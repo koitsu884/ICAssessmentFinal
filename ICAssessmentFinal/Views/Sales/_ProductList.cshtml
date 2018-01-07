@@ -1,0 +1,36 @@
+﻿@model List<ICAssessmentFinal.Models.Product>
+
+@{ 
+    int columnNum = 4;
+    int panelWidth = 12 / columnNum;
+    int cnt = 0;
+    bool columnEnd = false;
+}
+
+@foreach (var product in Model)
+{
+    if (cnt % columnNum == 0)
+    {
+        columnEnd = false;
+        WriteLiteral("<div class = \"row\">");
+    }
+    <div class="col-md-@panelWidth">
+        <a href="@Url.Action("ProductDetails", "Sales", new { id = product.Id, storeId = ViewBag.StoreId, storeName = ViewBag.StoreName})">
+            <div id="product@(product.Id)" class="panel panel-warning">
+                <div class="panel-heading">@(product.Name)</div>
+                <div class="panel-body">Probably Image is better..</div>
+            </div>
+        </a>
+    </div>
+
+
+    if (++cnt % columnNum == 0)
+    {
+        WriteLiteral("</div>");
+        columnEnd = true;
+    }
+}
+@if (!columnEnd)
+{
+    WriteLiteral("</div>");
+}

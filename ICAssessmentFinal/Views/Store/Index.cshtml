@@ -1,0 +1,104 @@
+﻿@model ICAssessmentFinal.Common.EditableTableOption
+@{
+    ViewBag.Title = "Store List";
+}
+
+<h2>Store List</h2>
+@Html.Partial("_EditableTable", Model)
+
+
+@section Scripts{
+    <script>
+    $(function () {
+        function Store(data) {
+            var self = this;
+            self.Id = data.Id;
+            self.Name = ko.observable(data.Name).extend({ required: true });
+            self.Address = ko.observable(data.Address).extend({ required: true});
+            self.IsActive = ko.observable(data.IsActive);
+            self.updated = false;
+
+             //Checking any changes of the record
+            ko.computed(function () {
+                return self.Name() + self.Address() + self.IsActive();
+            }).subscribe(function () {
+                self.updated = true;
+            });
+
+     /*       this.Name.subscribe(function () {
+                self.updated = true;
+            });
+
+            this.Address.subscribe(function () {
+                self.updated = true;
+            });
+
+            this.IsActive.subscribe(function () {
+                self.updated = true;
+            });*/
+        };
+
+        function StoreListViewModel() {
+            var self = this;
+            self.errors = ko.observable();
+            self.records = ko.observableArray([]);
+            //To add validation when new record is added
+            self.records.subscribe(function () {
+                self.errors(ko.validation.group(self.records(), { deep: true }));
+            });
+            self.remove = function (record) { self.records.destroy(record) }
+            self.addRecord = function () {
+                //TODO: Make it more generic if possible
+                self.records.push(new Store({ Id:0, Name:"New", Address:"New", IsActive: true
+                }));
+            };
+
+            self.save = function () {
+                if (self.errors()().length > 0) {
+                    alert("Error: Please enter appropriate valies for each fields");
+                    return;
+                }    
+                $.ajax("/Store/Save", {
+                    data: ko.toJSON({ stores: self.records }),
+                    type: "post", contentType: "application/json",
+                    success: function (result) {
+                        alert(result);
+                        self.getStoreListFromServer();
+                    }
+                });
+            };
+
+            self.getStoreListFromServer = function () {
+                $.getJSON("/Store/GetList", null, function (allData) {
+                    var mappedRecords = $.map(allData, function (item) { return new Store(item) });
+                    self.records(mappedRecords);
+                }).success(function (json) {
+                    console.log("Success");
+                })
+                .error(function (jqXHR, textStatus, errorThrown) {
+                    console.log("Error:" + textStatus);
+                    console.log("Text:" + jqXHR.responseText);
+                })
+                .complete(function () {
+                    console.log("Complete");
+                });
+            };
+
+            ko.extenders.recordChanges = function (target, option) {
+                target.subscribe(function (newValue) {
+                    console.log(option + ": " + newValue);
+                    target.updated = true;
+                });
+                return target;
+            };
+
+
+            //Initialize List
+            self.getStoreListFromServer();
+
+        };
+        ko.validation.init({ errorMessageClass: "text-danger" });
+        ko.applyBindings(new StoreListViewModel());
+    });
+    </script>
+}

@@ -1,0 +1,93 @@
+﻿@model ICAssessmentFinal.Common.EditableTableOption
+@{
+    ViewBag.Title = "Product List";
+}
+
+<h2>Product List</h2>
+@Html.Partial("_EditableTable", Model)
+
+
+@section Scripts{
+    <script>
+    $(function () {
+            function Product(data) {
+                var self = this;
+                
+                self.Id = data.Id;
+                self.IsActive = ko.observable(data.IsActive);
+                self.Name = ko.observable(data.Name).extend({ required: true });
+                self.Price = ko.observable(data.Price).extend({ required: true, number: true });
+                self.Category = ko.observable(data.Category);
+
+                self.updated = false;
+
+                //Checking any changes of the record
+                ko.computed(function () {
+                    return self.Name() + self.Price() + self.IsActive() + self.Category();
+                }).subscribe(function () {
+                self.updated = true;
+            });
+        };
+
+        function ProductListViewModel() {
+            var self = this;
+            //TODO: should get from ProductCategoryEnum class...
+            self.ProductCategoryEnum = ko.observableArray(["Food", "Cloth", "Book"]);
+            self.errors = ko.observable();
+            self.records = ko.observableArray([]);
+            //To add validation when new record is added
+            self.records.subscribe(function () {
+                self.errors(ko.validation.group(self.records(), { deep: true }));
+            });
+
+            self.remove = function (record) { self.records.destroy(record) }
+            self.addRecord = function () {
+                //TODO: Make it more generic if possible
+                self.records.push(new Product(
+                    {
+                        Id: 0, Name: "New", Price: 0, IsActive: true, Category: "Food"
+                    }
+                ));
+            };
+
+            self.save = function () {
+                if (self.errors()().length > 0) {
+                    alert("Error: Please enter appropriate valies for each fields");
+                    return;
+                }     
+                $.ajax("/Product/Save", {
+                    data: ko.toJSON({ products: self.records }),
+                    type: "post", contentType: "application/json",
+                    success: function (result) {
+                        alert(result);
+                        self.getStoreListFromServer();
+                    }
+                });
+            };
+
+            self.getStoreListFromServer = function () {
+                $.getJSON("/Product/GetList", null, function (allData) {
+                    var mappedRecords = $.map(allData, function (item) { return new Product(item) });
+                    self.records(mappedRecords);
+                }).success(function (json) {
+                    console.log("Success");
+                })
+                .error(function (jqXHR, textStatus, errorThrown) {
+                    console.log("Error:" + textStatus);
+                    console.log("Text:" + jqXHR.responseText);
+                })
+                .complete(function () {
+                    console.log("Complete");
+                });
+            };
+            //Initialize List
+            self.getStoreListFromServer();
+        };
+
+       // viewModel.errors = ko.validation.group(viewModel);
+        ko.validation.init({ errorMessageClass: "text-danger" });
+        ko.applyBindings(new ProductListViewModel());
+
+    });
+    </script>
+}

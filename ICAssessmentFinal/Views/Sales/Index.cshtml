@@ -1,0 +1,40 @@
+﻿@model List<ICAssessmentFinal.Models.Product>
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Product List</h2>
+<p>
+    Store:
+    <select data-bind="options: Stores, optionsText: 'Name', optionsValue: 'Id', value: selectedStore"></select>
+</p>
+
+<div id="productList"></div>
+
+@section Scripts{
+    <script>
+        $(function () {
+            function SalesViewModel() {
+                var self = this;
+                self.Stores = ko.observableArray([]);
+                self.selectedStore = ko.observable();
+                self.selectedStore.subscribe(function (newValue) {
+                    //Load partial view '_ProductList' via controller
+                    $('#productList').load('/Sales/GetProductList/' + newValue);
+                });
+
+                self.getStoreListFromServer = function () {
+                    $.getJSON("/Store/GetNameList", null, function (allData) {
+                        var mappedRecords = $.map(allData, function (item) { return item });
+                        self.Stores(mappedRecords);
+                    });
+                }
+
+                //Initialize
+                self.getStoreListFromServer();
+
+            };
+            ko.applyBindings(new SalesViewModel());
+        });
+    </script>
+}

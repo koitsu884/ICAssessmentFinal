@@ -1,0 +1,43 @@
+﻿@model ICAssessmentFinal.Models.Product
+@{
+    ViewBag.Title = "ProductDetails";
+}
+
+<h2>ProductDetails</h2>
+<p>Store: @ViewBag.StoreName</p>
+<div>
+    <h4>Product</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Price)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Price)
+        </dd>
+
+    </dl>
+</div>
+
+    @if (User.Identity.IsAuthenticated)
+    {
+        <p>
+            @Html.ActionLink("Buy the product", "Purchase", new { productId = Model.Id, storeId = ViewBag.StoreId, userName = User.Identity.Name })
+        </p>
+    }
+    else
+    {
+        <p>Please login before processing purchase</p>
+    }
+<p>
+    @Html.ActionLink("Back to List", "Index")
+</p>

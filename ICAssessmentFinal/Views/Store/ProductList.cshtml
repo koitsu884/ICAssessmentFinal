@@ -1,0 +1,78 @@
+﻿@model ICAssessmentFinal.Common.EditableTableOption
+@{
+    ViewBag.Title = "StoreProductList";
+}
+
+<h2>Store Product List</h2>
+
+<p>
+    Store:
+    <select data-bind="options: Stores, optionsText: 'Name', optionsValue: 'Id', value: selectedStore"></select>
+</p>
+@Html.Partial("_EditableTable", Model)
+
+
+@section Scripts{
+    <script>
+        $(function () {
+            function StoreProduct(data) {
+                var self = this;
+                self.Id = data.Id;
+                self.ProductName = data.ProductName;
+                self.IsAvailable = ko.observable(data.IsAvailable);
+                self.updated = false;
+
+                self.IsAvailable.subscribe(function () { self.updated = true; })
+            };
+
+            function StoreProductViewModel() {
+                var self = this;
+                self.records = ko.observableArray([]);
+                self.Stores = ko.observableArray([]);
+                self.selectedStore = ko.observable();
+                self.selectedStore.subscribe(function (newValue) {
+                    self.getStoreProductListFromServer(newValue);
+                });
+                self.save = function () {
+                    $.ajax("/Store/SaveStoreProductList", {
+                        data: ko.toJSON({ storeId: self.selectedStore, productList: self.records }),
+                        type: "post", contentType: "application/json",
+                        success: function (result) {
+                            alert(result);
+                        }
+                    });
+                };
+
+                self.getStoreListFromServer = function () {
+                    $.getJSON("/Store/GetNameList", null, function (allData) {
+                        var mappedRecords = $.map(allData, function (item) { return item });
+                        self.Stores(mappedRecords);
+                    });
+                }
+
+                self.getStoreProductListFromServer = function (storeId) {
+                    $.getJSON("/Store/GetProductList", {storeId: storeId}, function (allData) {
+                        var mappedRecords = $.map(allData, function (item) { return new StoreProduct(item) });
+                        self.records(mappedRecords);
+                    }).success(function (json) {
+                        console.log("Success");
+                    })
+                    .error(function (jqXHR, textStatus, errorThrown) {
+                        console.log("Error:" + textStatus);
+                        console.log("Text:" + jqXHR.responseText);
+                    })
+                    .complete(function () {
+                        console.log("Complete");
+                    });
+                };
+
+                //Initialize
+                self.getStoreListFromServer();
+
+            };
+            ko.applyBindings(new StoreProductViewModel());
+        });
+    </script>
+}
+
+

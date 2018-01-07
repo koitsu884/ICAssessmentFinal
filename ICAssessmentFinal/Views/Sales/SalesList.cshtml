@@ -1,0 +1,35 @@
+﻿@model IEnumerable<ICAssessmentFinal.Models.ProductSold>
+
+@{
+    ViewBag.Title = "SalesList";
+}
+
+<h2>SalesList</h2>
+<table id="SalesTable" class="table">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Customer)</th>
+            <th>@Html.DisplayNameFor(model => model.Product)</th>
+            <th>@Html.DisplayNameFor(model => model.Store)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var sales in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => sales.Customer.Name) </td>
+                <td>@Html.DisplayFor(modelItem => sales.Product.Name) </td>
+                <td>@Html.DisplayFor(modelItem => sales.Store.Name) </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts{
+    <script>
+        $(function () {
+            $('#SalesTable').DataTable();
+        });
+    </script>
+}
+
